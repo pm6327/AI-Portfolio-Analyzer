@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import plotly.express as px
 import plotly.graph_objects as go
 from scipy.stats import norm
-from utils.save_portfolio import save_risk_metrics
+from utils.savePortfolio import save_risk_metrics
 
 if st.session_state.disable:
     st.info('Please enter your input on the Home page and try again.')

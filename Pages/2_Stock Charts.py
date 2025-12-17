@@ -4,158 +4,195 @@ import numpy as np
 import pandas as pd
 from datetime import date
 import plotly.graph_objects as go
-from utils.savePortfolio import save_portfolio
+from utils.savePortfolio import save_risk_metrics
 
 
-
-#To prevent access from sidebar before inputting values
+# ---------- ACCESS GUARD ----------
 if st.session_state.disable:
-    st.info('Please enter your input on the Home page and try again.')
+    st.info("Please enter your input on the Home page and try again.")
     st.stop()
 
-# ----- SETTING UP LOCAL VARIABLES -----
+
+# ---------- PORTFOLIO SETUP ----------
 portfolio = st.session_state.portfolio
 weights_dict = {}
-if portfolio is not None:
-    # Update weights_dict based on portfolio values
-    tickers = portfolio.Ticker
-    values = portfolio.Value
 
-    for ticker in tickers:
-        weight = portfolio.loc[portfolio["Ticker"] == ticker, 'Value'].values / sum(values)
-        weights_dict[ticker] = float(weight)
+tickers = portfolio["Ticker"].tolist()
+values = portfolio["Value"].tolist()
 
-    # Update portfolio DataFrame with weights
-    portfolio['Weight'] = portfolio['Ticker'].map(weights_dict)
-    st.session_state.portfolio = portfolio
+total_value = sum(values)
+for ticker, value in zip(tickers, values):
+    weights_dict[ticker] = value / total_value
 
-tickers = portfolio.Ticker
-values = portfolio.Value
+portfolio["Weight"] = portfolio["Ticker"].map(weights_dict)
 
-for ticker in tickers:
-    weight = portfolio.loc[portfolio["Ticker"] == ticker, 'Value'].values/sum(values)
-    weights_dict[ticker] = float(weight)
+weights = np.array(list(weights_dict.values()))
 
-portfolio['Weight'] = portfolio['Ticker'].map(weights_dict)
-weights = list(weights_dict.values())
-st.session_state.portfolio = portfolio
+st.session_state["weights"] = weights
+st.session_state["weights_dict"] = weights_dict
+st.session_state["values"] = values
+st.session_state["tickers"] = tickers
 
-stocks = yf.download(tickers=list(tickers), period='5y')
-stocks=stocks['Adj Close']
-today = stocks.index[-1]
-yday = stocks.index[-2]
-returns= stocks.pct_change().dropna()
-std = np.std(returns) * 100 * np.sqrt(252)  # Annualized volatility
-cumulative_returns = (1 + returns).cumprod()
-drawdowns = cumulative_returns / cumulative_returns.expanding().max() - 1
-max_drawdown = drawdowns.min()
 
-if "stocks" not in st.session_state:
-    st.session_state["stocks"] = []
+# ---------- TICKER NORMALIZATION (INDIA FIX) ----------
+def normalize_ticker(t):
+    indian = {
+        "RELIANCE", "TCS", "INFY", "HDFCBANK", "ICICIBANK", "SBIN",
+        "ITC", "LT", "AXISBANK", "KOTAKBANK", "BHARTIARTL",
+        "HINDUNILVR", "BAJFINANCE", "MARUTI", "TATAMOTORS"
+    }
+    return f"{t}.NS" if t in indian else t
 
-if "returns" not in st.session_state:
-    st.session_state["returns"] = []
 
-    
-st.session_state['stocks'] = stocks
-st.session_state['returns'] = returns
-st.session_state['tickers'] = tickers
-st.session_state['values'] = values
-st.session_state['weights'] = weights
-st.session_state['weights_dict'] = weights_dict
+yf_tickers = [normalize_ticker(t) for t in tickers]
 
-c1, c2, c3= st.columns([2,2,1], vertical_alignment="bottom")
 
- # Save the first ticker as an example
-#----- Actual Page Code -----
+# ---------- DOWNLOAD STOCK DATA ----------
+stocks = yf.download(yf_tickers, period="5y", group_by="ticker")
+
+if stocks.empty:
+    st.error("No stock data available. Please check ticker symbols.")
+    st.stop()
+
+
+# ---------- HANDLE MULTIINDEX ----------
+def extract_close(df):
+    if isinstance(df.columns, pd.MultiIndex):
+        if "Adj Close" in df.columns.get_level_values(1):
+            return df.xs("Adj Close", level=1, axis=1)
+        else:
+            return df.xs("Close", level=1, axis=1)
+    return df["Adj Close"] if "Adj Close" in df.columns else df["Close"]
+
+
+stocks = extract_close(stocks)
+
+if stocks.empty:
+    st.error("Stock price data unavailable after processing.")
+    st.stop()
+
+
+# ---------- RETURNS & DRAWDOWN ----------
+returns = stocks.pct_change().dropna()
+
+if returns.empty:
+    st.error("Not enough historical data to compute returns.")
+    st.stop()
+
+portfolio_returns = np.dot(returns.mean() * 252, weights)
+portfolio_sd = np.sqrt(np.dot(weights.T, np.dot(returns.cov() * 252, weights)))
+
+cumulative = (1 + returns).cumprod()
+rolling_max = cumulative.expanding().max()
+drawdowns = cumulative / rolling_max - 1
+max_drawdown = drawdowns.min().min()
+
+
+# ---------- STORE SESSION ----------
+st.session_state["stocks"] = stocks
+st.session_state["returns"] = returns
+
+
+# ---------- UI CONTROLS ----------
+c1, c2, c3 = st.columns([2, 2, 1])
+
 with c1:
-    frequency = st.selectbox(
-        "Frequency of return",
-        ("Daily", "Weekly", "Monthly", "Yearly")
-    )
+    frequency = st.selectbox("Frequency of return", ["Daily", "Weekly", "Monthly", "Yearly"])
+
 with c2:
-    t = st.selectbox(
-        "Select ticker",
-        tickers
-    )
+    t = st.selectbox("Select ticker", tickers)
+
 with c3:
     st.page_link("Pages/3_Risk Analysis.py", label="Go to Risk Analysis →")
 
-c1, c2 = st.columns([3,1], vertical_alignment="center")
-with c1:
-    st.title(t+" Summary")
+
+st.title(f"{t} Summary")
 
 
-# ----- FREQUENCY SET UP
-f = stocks.pct_change().dropna()
-daily_std = round(np.std(stocks[t].dropna()))
-std = round(np.std(returns)*100*np.sqrt(252), 2)
-risk = std.to_frame()
-risk = risk.rename(columns = {risk.columns[0]:'Volatility'})
-st.session_state['risk'] = risk
-
+# ---------- FREQUENCY RETURNS ----------
 if frequency == "Daily":
-    f = stocks.pct_change().dropna()
+    f = stocks.pct_change()
 elif frequency == "Weekly":
-    f = stocks.resample('W-FRI').last().pct_change().dropna()
+    f = stocks.resample("W-FRI").last().pct_change()
 elif frequency == "Monthly":
-    f = stocks.resample('M').last().pct_change().dropna()
-elif frequency == "Yearly":
-    f = stocks.resample('Y').last().pct_change().dropna()
+    f = stocks.resample("M").last().pct_change()
+else:
+    f = stocks.resample("Y").last().pct_change()
 
-cumulative_returns = (1 + returns).cumprod()
-rolling_max = cumulative_returns.expanding().max()
-drawdowns = cumulative_returns / rolling_max - 1
-max_drawdown = drawdowns.min()
+f = f.dropna()
 
-# ----- STOCK CHARTS ------
-col1, col2=st.columns([3,2])
+
+# ---------- RISK TABLE ----------
+annual_volatility = (returns.std() * np.sqrt(252) * 100).round(2)
+risk = annual_volatility.to_frame(name="Volatility")
+st.session_state["risk"] = risk
+
+
+# ---------- CHARTS ----------
+col1, col2 = st.columns([3, 2])
+
 with col1:
     tab1, tab2 = st.tabs(["Historical Stock Price", "Live Price"])
+
     with tab1:
-        st.write( "Stock Price (Last 5 years)") 
         st.line_chart(stocks[t], height=350)
+
     with tab2:
-        today = date.today()
-        ohlc = yf.Ticker(t).history(start=yday, end=today, interval="2m")
-        candlestick = go.Candlestick(x=ohlc.index,
-                                 open=ohlc.Open,
-                                 high=ohlc.High,
-                                 low=ohlc.Low,
-                                 close=ohlc.Close)
+        yday = stocks.index[-2]
+        ohlc = yf.Ticker(normalize_ticker(t)).history(
+            start=yday, end=date.today(), interval="2m"
+        )
 
-        layout = go.Layout(xaxis=dict(title='Date'),
-                        yaxis=dict(title='Price'),
-                        height=400)
+        if not ohlc.empty:
+            fig = go.Figure(data=[go.Candlestick(
+                x=ohlc.index,
+                open=ohlc["Open"],
+                high=ohlc["High"],
+                low=ohlc["Low"],
+                close=ohlc["Close"]
+            )])
+            fig.update_layout(height=400)
+            st.plotly_chart(fig)
+        else:
+            st.info("Live data not available.")
 
-        ohlc_chart = go.Figure(data=[candlestick], layout=layout)
-        st.plotly_chart(ohlc_chart)
 
-#----- NEWS -----
+# ---------- NEWS & METRICS ----------
 with col2:
-    st.subheader(t+" News")
-    topnews = yf.Ticker(t).news[0:3]
-    for i, article in enumerate(topnews):
-        title = article['title']
-        link = article['link']
-        markdown_news = f"[{title}]({link})"
-        st.markdown("  "+markdown_news)
-     
-    st.write("") #For padding
+    st.subheader(f"{t} News")
+    news = yf.Ticker(normalize_ticker(t)).news or []
 
-    pct = 100*f[t].tail(1).values[0]
-    
-    # ----- METRICS -----
-    subcol1, subcol2, subcol3=st.columns([0.2,1,1])
-    with subcol2:
-        st.metric("Current Stock Price", value = round(stocks[t].tail(1).values[0], 2), delta= str(round(pct, 2))+ "%")
-        st.metric("Portfolio Weight", value = round(weights_dict[t], 2))
-    with subcol3:
-        st.metric("Annualised Volatilty", value = str(std[t])+"%")
-        st.write(" ") #For padding
-        st.metric("Maximum Drawdown", value = str(round(max_drawdown[t]*100, 2))+"%")
+    shown = 0
+    for article in news:
+        if article.get("title") and article.get("link"):
+            st.markdown(f"[{article['title']}]({article['link']})")
+            shown += 1
+        if shown == 3:
+            break
 
-st.write(frequency +" returns (Last 5 years)")
-st.line_chart(f[t], height = 140)
+    pct = f[t].iloc[-1] * 100 if not f.empty else 0
 
-save_portfolio(portfolio, stocks, weights_dict, std, max_drawdown) 
+    st.metric("Current Stock Price", round(stocks[t].iloc[-1], 2), f"{pct:.2f}%")
+    st.metric("Portfolio Weight", round(weights_dict[t], 2))
+    st.metric("Annualised Volatility", f"{annual_volatility[t]}%")
+    st.metric("Maximum Drawdown", f"{round(drawdowns[t].min() * 100, 2)}%")
+
+
+# ---------- RETURNS CHART ----------
+st.write(f"{frequency} returns (Last 5 years)")
+st.line_chart(f[t], height=140)
+
+
+# ---------- SAVE (LOCAL ONLY, COLLEGE MODE) ----------
+save_risk_metrics(
+    portfolio=portfolio,
+    stocks=stocks,
+    weights_dict=weights_dict,
+    returns=returns,
+    riskfree=0.05,
+    values=values,
+    max_drawdown=max_drawdown,
+    portfolio_returns=portfolio_returns,
+    portfolio_sd=portfolio_sd,
+    tickers=tickers
+)

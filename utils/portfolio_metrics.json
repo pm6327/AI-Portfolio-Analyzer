@@ -1,20 +1,90 @@
 
 [
-    {
-        "GOOG": {
-            "Current Stock Price": 177.35,
-            "Portfolio Weight": 1000.0,
-            "Annualized Volatility": "31.99%",
-            "Maximum Drawdown": "-44.6%"
-        }
-    },
-    {
-        "TSLA": {
-            "Current Stock Price": 311.18,
-            "Portfolio Weight": 1000.0,
-            "Annualized Volatility": "66.75%",
-            "Maximum Drawdown": "-73.63%"
-        }
-    }
-    
+  {"AAPL": {"Current Stock Price": 189.32, "Portfolio Weight": 1000.0, "Annualized Volatility": "27.84%", "Maximum Drawdown": "-32.45%"}},
+  {"MSFT": {"Current Stock Price": 421.18, "Portfolio Weight": 1000.0, "Annualized Volatility": "24.67%", "Maximum Drawdown": "-29.18%"}},
+  {"GOOG": {"Current Stock Price": 177.35, "Portfolio Weight": 1000.0, "Annualized Volatility": "31.99%", "Maximum Drawdown": "-44.60%"}},
+  {"AMZN": {"Current Stock Price": 186.74, "Portfolio Weight": 1000.0, "Annualized Volatility": "33.21%", "Maximum Drawdown": "-41.32%"}},
+  {"META": {"Current Stock Price": 513.62, "Portfolio Weight": 1000.0, "Annualized Volatility": "38.42%", "Maximum Drawdown": "-52.18%"}},
+  {"TSLA": {"Current Stock Price": 311.18, "Portfolio Weight": 1000.0, "Annualized Volatility": "66.75%", "Maximum Drawdown": "-73.63%"}},
+  {"NVDA": {"Current Stock Price": 121.45, "Portfolio Weight": 1000.0, "Annualized Volatility": "42.19%", "Maximum Drawdown": "-48.37%"}},
+  {"NFLX": {"Current Stock Price": 651.32, "Portfolio Weight": 1000.0, "Annualized Volatility": "45.61%", "Maximum Drawdown": "-59.42%"}},
+  {"ORCL": {"Current Stock Price": 132.84, "Portfolio Weight": 1000.0, "Annualized Volatility": "26.11%", "Maximum Drawdown": "-28.74%"}},
+  {"INTC": {"Current Stock Price": 32.17, "Portfolio Weight": 1000.0, "Annualized Volatility": "39.55%", "Maximum Drawdown": "-61.88%"}},
+
+  {"AMD": {"Current Stock Price": 163.52, "Portfolio Weight": 1000.0, "Annualized Volatility": "49.81%", "Maximum Drawdown": "-57.34%"}},
+  {"IBM": {"Current Stock Price": 189.74, "Portfolio Weight": 1000.0, "Annualized Volatility": "22.93%", "Maximum Drawdown": "-24.19%"}},
+  {"ADBE": {"Current Stock Price": 546.18, "Portfolio Weight": 1000.0, "Annualized Volatility": "29.66%", "Maximum Drawdown": "-35.22%"}},
+  {"CRM": {"Current Stock Price": 287.44, "Portfolio Weight": 1000.0, "Annualized Volatility": "34.71%", "Maximum Drawdown": "-42.98%"}},
+  {"UBER": {"Current Stock Price": 75.28, "Portfolio Weight": 1000.0, "Annualized Volatility": "47.62%", "Maximum Drawdown": "-58.31%"}},
+  {"LYFT": {"Current Stock Price": 18.41, "Portfolio Weight": 1000.0, "Annualized Volatility": "61.94%", "Maximum Drawdown": "-71.28%"}},
+  {"BABA": {"Current Stock Price": 79.63, "Portfolio Weight": 1000.0, "Annualized Volatility": "52.17%", "Maximum Drawdown": "-69.44%"}},
+  {"SHOP": {"Current Stock Price": 71.52, "Portfolio Weight": 1000.0, "Annualized Volatility": "55.31%", "Maximum Drawdown": "-66.18%"}},
+  {"SQ": {"Current Stock Price": 66.74, "Portfolio Weight": 1000.0, "Annualized Volatility": "58.92%", "Maximum Drawdown": "-72.41%"}},
+  {"PYPL": {"Current Stock Price": 64.81, "Portfolio Weight": 1000.0, "Annualized Volatility": "41.18%", "Maximum Drawdown": "-63.74%"}},
+
+  {"V": {"Current Stock Price": 276.14, "Portfolio Weight": 1000.0, "Annualized Volatility": "21.36%", "Maximum Drawdown": "-26.84%"}},
+  {"MA": {"Current Stock Price": 465.72, "Portfolio Weight": 1000.0, "Annualized Volatility": "22.44%", "Maximum Drawdown": "-27.13%"}},
+  {"JPM": {"Current Stock Price": 199.31, "Portfolio Weight": 1000.0, "Annualized Volatility": "24.87%", "Maximum Drawdown": "-33.55%"}},
+  {"BAC": {"Current Stock Price": 37.21, "Portfolio Weight": 1000.0, "Annualized Volatility": "31.29%", "Maximum Drawdown": "-42.64%"}},
+  {"GS": {"Current Stock Price": 392.47, "Portfolio Weight": 1000.0, "Annualized Volatility": "29.91%", "Maximum Drawdown": "-38.92%"}},
+
+  {"KO": {"Current Stock Price": 62.14, "Portfolio Weight": 1000.0, "Annualized Volatility": "18.27%", "Maximum Drawdown": "-21.64%"}},
+  {"PEP": {"Current Stock Price": 170.28, "Portfolio Weight": 1000.0, "Annualized Volatility": "19.11%", "Maximum Drawdown": "-23.08%"}},
+  {"WMT": {"Current Stock Price": 66.47, "Portfolio Weight": 1000.0, "Annualized Volatility": "20.32%", "Maximum Drawdown": "-25.19%"}},
+  {"COST": {"Current Stock Price": 846.19, "Portfolio Weight": 1000.0, "Annualized Volatility": "23.14%", "Maximum Drawdown": "-28.74%"}},
+
+  {"XOM": {"Current Stock Price": 112.41, "Portfolio Weight": 1000.0, "Annualized Volatility": "34.29%", "Maximum Drawdown": "-49.18%"}},
+  {"CVX": {"Current Stock Price": 155.28, "Portfolio Weight": 1000.0, "Annualized Volatility": "32.87%", "Maximum Drawdown": "-46.22%"}},
+  {"BP": {"Current Stock Price": 36.14, "Portfolio Weight": 1000.0, "Annualized Volatility": "37.55%", "Maximum Drawdown": "-54.81%"}},
+
+  {"NKE": {"Current Stock Price": 94.32, "Portfolio Weight": 1000.0, "Annualized Volatility": "28.11%", "Maximum Drawdown": "-39.62%"}},
+  {"DIS": {"Current Stock Price": 98.41, "Portfolio Weight": 1000.0, "Annualized Volatility": "35.72%", "Maximum Drawdown": "-57.29%"}},
+  {"SONY": {"Current Stock Price": 86.74, "Portfolio Weight": 1000.0, "Annualized Volatility": "29.88%", "Maximum Drawdown": "-41.36%"}},
+
+  
+  {"RELIANCE": {"Current Stock Price": 2921.45, "Portfolio Weight": 1000.0, "Annualized Volatility": "29.18%", "Maximum Drawdown": "-38.42%"}},
+  {"TCS": {"Current Stock Price": 3876.20, "Portfolio Weight": 1000.0, "Annualized Volatility": "22.41%", "Maximum Drawdown": "-27.84%"}},
+  {"INFY": {"Current Stock Price": 1654.80, "Portfolio Weight": 1000.0, "Annualized Volatility": "24.67%", "Maximum Drawdown": "-31.12%"}},
+  {"HDFCBANK": {"Current Stock Price": 1598.75, "Portfolio Weight": 1000.0, "Annualized Volatility": "21.94%", "Maximum Drawdown": "-26.37%"}},
+  {"ICICIBANK": {"Current Stock Price": 1124.30, "Portfolio Weight": 1000.0, "Annualized Volatility": "25.89%", "Maximum Drawdown": "-34.91%"}},
+  {"SBIN": {"Current Stock Price": 836.40, "Portfolio Weight": 1000.0, "Annualized Volatility": "31.74%", "Maximum Drawdown": "-42.56%"}},
+  {"BHARTIARTL": {"Current Stock Price": 1346.55, "Portfolio Weight": 1000.0, "Annualized Volatility": "27.12%", "Maximum Drawdown": "-35.88%"}},
+  {"ITC": {"Current Stock Price": 471.80, "Portfolio Weight": 1000.0, "Annualized Volatility": "19.36%", "Maximum Drawdown": "-23.44%"}},
+  {"HINDUNILVR": {"Current Stock Price": 2534.65, "Portfolio Weight": 1000.0, "Annualized Volatility": "20.18%", "Maximum Drawdown": "-25.71%"}},
+  {"LT": {"Current Stock Price": 3612.10, "Portfolio Weight": 1000.0, "Annualized Volatility": "26.87%", "Maximum Drawdown": "-33.42%"}},
+
+  {"AXISBANK": {"Current Stock Price": 1086.55, "Portfolio Weight": 1000.0, "Annualized Volatility": "27.94%", "Maximum Drawdown": "-37.19%"}},
+  {"KOTAKBANK": {"Current Stock Price": 1764.40, "Portfolio Weight": 1000.0, "Annualized Volatility": "23.61%", "Maximum Drawdown": "-29.76%"}},
+  {"MARUTI": {"Current Stock Price": 12486.20, "Portfolio Weight": 1000.0, "Annualized Volatility": "24.38%", "Maximum Drawdown": "-30.54%"}},
+  {"TATAMOTORS": {"Current Stock Price": 986.75, "Portfolio Weight": 1000.0, "Annualized Volatility": "38.92%", "Maximum Drawdown": "-54.11%"}},
+  {"M&M": {"Current Stock Price": 1892.30, "Portfolio Weight": 1000.0, "Annualized Volatility": "32.14%", "Maximum Drawdown": "-41.86%"}},
+  {"ULTRACEMCO": {"Current Stock Price": 10842.55, "Portfolio Weight": 1000.0, "Annualized Volatility": "25.74%", "Maximum Drawdown": "-33.09%"}},
+  {"ASIANPAINT": {"Current Stock Price": 2876.90, "Portfolio Weight": 1000.0, "Annualized Volatility": "21.87%", "Maximum Drawdown": "-28.46%"}},
+  {"BAJFINANCE": {"Current Stock Price": 7154.60, "Portfolio Weight": 1000.0, "Annualized Volatility": "34.51%", "Maximum Drawdown": "-46.38%"}},
+  {"BAJAJFINSV": {"Current Stock Price": 1648.75, "Portfolio Weight": 1000.0, "Annualized Volatility": "33.22%", "Maximum Drawdown": "-44.91%"}},
+  {"WIPRO": {"Current Stock Price": 486.35, "Portfolio Weight": 1000.0, "Annualized Volatility": "26.41%", "Maximum Drawdown": "-34.82%"}},
+
+  {"TECHM": {"Current Stock Price": 1286.40, "Portfolio Weight": 1000.0, "Annualized Volatility": "27.68%", "Maximum Drawdown": "-36.24%"}},
+  {"HCLTECH": {"Current Stock Price": 1467.55, "Portfolio Weight": 1000.0, "Annualized Volatility": "23.94%", "Maximum Drawdown": "-29.88%"}},
+  {"SUNPHARMA": {"Current Stock Price": 1538.25, "Portfolio Weight": 1000.0, "Annualized Volatility": "22.36%", "Maximum Drawdown": "-27.64%"}},
+  {"DRREDDY": {"Current Stock Price": 6284.40, "Portfolio Weight": 1000.0, "Annualized Volatility": "24.87%", "Maximum Drawdown": "-32.41%"}},
+  {"CIPLA": {"Current Stock Price": 1486.90, "Portfolio Weight": 1000.0, "Annualized Volatility": "23.18%", "Maximum Drawdown": "-30.72%"}},
+  {"POWERGRID": {"Current Stock Price": 292.45, "Portfolio Weight": 1000.0, "Annualized Volatility": "18.91%", "Maximum Drawdown": "-22.86%"}},
+  {"NTPC": {"Current Stock Price": 346.70, "Portfolio Weight": 1000.0, "Annualized Volatility": "19.84%", "Maximum Drawdown": "-24.18%"}},
+  {"ONGC": {"Current Stock Price": 278.15, "Portfolio Weight": 1000.0, "Annualized Volatility": "31.62%", "Maximum Drawdown": "-43.55%"}},
+  {"COALINDIA": {"Current Stock Price": 462.80, "Portfolio Weight": 1000.0, "Annualized Volatility": "28.41%", "Maximum Drawdown": "-37.92%"}},
+  {"JSWSTEEL": {"Current Stock Price": 912.65, "Portfolio Weight": 1000.0, "Annualized Volatility": "34.19%", "Maximum Drawdown": "-46.73%"}},
+
+  {"TATASTEEL": {"Current Stock Price": 151.45, "Portfolio Weight": 1000.0, "Annualized Volatility": "39.82%", "Maximum Drawdown": "-58.94%"}},
+  {"HINDALCO": {"Current Stock Price": 642.30, "Portfolio Weight": 1000.0, "Annualized Volatility": "36.48%", "Maximum Drawdown": "-52.61%"}},
+  {"GRASIM": {"Current Stock Price": 2468.75, "Portfolio Weight": 1000.0, "Annualized Volatility": "27.31%", "Maximum Drawdown": "-36.18%"}},
+  {"ADANIENT": {"Current Stock Price": 3246.40, "Portfolio Weight": 1000.0, "Annualized Volatility": "55.72%", "Maximum Drawdown": "-71.43%"}},
+  {"ADANIPORTS": {"Current Stock Price": 1428.65, "Portfolio Weight": 1000.0, "Annualized Volatility": "42.18%", "Maximum Drawdown": "-59.87%"}},
+  {"INDUSINDBK": {"Current Stock Price": 1482.20, "Portfolio Weight": 1000.0, "Annualized Volatility": "29.84%", "Maximum Drawdown": "-39.16%"}},
+  {"SBILIFE": {"Current Stock Price": 1496.55, "Portfolio Weight": 1000.0, "Annualized Volatility": "22.76%", "Maximum Drawdown": "-28.41%"}},
+  {"HDFCLIFE": {"Current Stock Price": 621.30, "Portfolio Weight": 1000.0, "Annualized Volatility": "23.51%", "Maximum Drawdown": "-31.09%"}},
+  {"BPCL": {"Current Stock Price": 512.80, "Portfolio Weight": 1000.0, "Annualized Volatility": "30.92%", "Maximum Drawdown": "-41.33%"}},
+  {"IOC": {"Current Stock Price": 172.40, "Portfolio Weight": 1000.0, "Annualized Volatility": "29.44%", "Maximum Drawdown": "-39.27%"}}
+
+
 ]
