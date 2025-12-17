@@ -1,0 +1,20 @@
+
+[
+    {
+        "GOOG": {
+            "Current Stock Price": 177.35,
+            "Portfolio Weight": 1000.0,
+            "Annualized Volatility": "31.99%",
+            "Maximum Drawdown": "-44.6%"
+        }
+    },
+    {
+        "TSLA": {
+            "Current Stock Price": 311.18,
+            "Portfolio Weight": 1000.0,
+            "Annualized Volatility": "66.75%",
+            "Maximum Drawdown": "-73.63%"
+        }
+    }
+    
+]
