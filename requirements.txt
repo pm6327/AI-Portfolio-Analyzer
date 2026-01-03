@@ -1,10 +1,10 @@
 streamlit==1.39.0
 python-dotenv==1.0.1
 
-# Core data stack (LangChain-compatible)
+# Core data stack (Streamlit Cloud compatible)
 numpy==1.26.4
-pandas==2.2.3
-scipy==1.12.0
+pandas==2.1.4
+scipy==1.11.4
 
 # Visualization
 plotly==5.23.0
@@ -19,7 +19,7 @@ pymongo==4.8.0
 
 # LangChain ecosystem (version-aligned)
 langchain==0.2.16
-langchain-core==0.2.38
+langchain-core==0.2.39
 langchain-community==0.2.16
 langgraph==0.2.25
 langchain-groq==0.1.9
