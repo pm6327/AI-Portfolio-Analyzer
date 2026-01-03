@@ -4,10 +4,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import plotly.express as px
 import plotly.graph_objects as go
-from statistics import NormalDist
+from scipy.stats import norm
 from utils.savePortfolio import save_risk_metrics
 
-norm = NormalDist()
+# norm = NormalDist()
 
 
 if st.session_state.disable:

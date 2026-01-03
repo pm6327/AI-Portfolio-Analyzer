@@ -1,10 +1,8 @@
 import json
 import os
 import numpy as np
-from statistics import NormalDist
+from scipy.stats import norm
 from utils.mongo_manager import MongoManager
-
-norm = NormalDist()
 
 
 def save_risk_metrics(
