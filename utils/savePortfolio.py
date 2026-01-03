@@ -1,8 +1,10 @@
 import json
 import os
 import numpy as np
-from scipy.stats import norm
+from statistics import NormalDist
 from utils.mongo_manager import MongoManager
+
+norm = NormalDist()
 
 
 def save_risk_metrics(
@@ -15,7 +17,7 @@ def save_risk_metrics(
     max_drawdown,
     portfolio_returns,
     portfolio_sd,
-    tickers
+    tickers,
 ):
     # ---------- VALIDATION ----------
     if returns is None or returns.empty:
@@ -45,18 +47,18 @@ def save_risk_metrics(
     if downside_cov.empty:
         risk_metrics["Sortino Ratio"] = "N/A"
     else:
-        downside_dev = (
-            np.sqrt(np.dot(weights.T, np.dot(downside_cov, weights)))
-            * np.sqrt(252)
-        )
+        downside_dev = np.sqrt(
+            np.dot(weights.T, np.dot(downside_cov, weights))
+        ) * np.sqrt(252)
         risk_metrics["Sortino Ratio"] = (
             round((portfolio_returns - riskfree) / downside_dev, 2)
-            if downside_dev > 0 else "N/A"
+            if downside_dev > 0
+            else "N/A"
         )
 
     risk_metrics["Maximum Drawdown"] = {
         "Percentage": f"{round(max_drawdown * 100, 2)}%",
-        "Delta": round(max_drawdown * total_value, 2)
+        "Delta": round(max_drawdown * total_value, 2),
     }
 
     confidence_level = 0.95
@@ -66,13 +68,12 @@ def save_risk_metrics(
     mean_return = portfolio_daily_returns.mean()
 
     var_relative = -(
-        mean_return * 10
-        + z_score * portfolio_sd / np.sqrt(252) * np.sqrt(10)
+        mean_return * 10 + z_score * portfolio_sd / np.sqrt(252) * np.sqrt(10)
     )
 
     risk_metrics["10-day Value at Risk (95%)"] = {
         "Percentage": f"{round(var_relative * 100, 2)}%",
-        "Delta": round(-total_value * var_relative, 0)
+        "Delta": round(-total_value * var_relative, 0),
     }
 
     # ---------- SAVE TO FILE ----------
@@ -83,8 +84,7 @@ def save_risk_metrics(
     # ---------- SAVE TO MONGODB (OPTIONAL) ----------
     try:
         mongo_db = MongoManager(
-            collection_name="risk_metrics",
-            db_name="portfolio_data"
+            collection_name="risk_metrics", db_name="portfolio_data"
         )
         mongo_db.insert_document(risk_metrics)
         mongo_db.close_connection()
