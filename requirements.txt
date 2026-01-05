@@ -12,7 +12,8 @@ matplotlib-inline==0.1.6
 
 # Finance
 yfinance==0.2.43
-
+# scipy
+scipy==1.13.0
 # Database
 pymongo==4.8.0
 
