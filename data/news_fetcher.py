@@ -1,11 +1,16 @@
 import requests
+import os
 
-API_KEY = "pub_fab80513fb25441aa5cb41efd039ed05"  # replace
+from dotenv import load_dotenv
+
+load_dotenv()
+
+NEWS_API_KEY = os.getenv("NEWS_API_KEY")
 
 
 def get_stock_news(symbol):
 
-    url = f"https://newsapi.org/v2/everything?q={symbol}&apiKey={API_KEY}"
+    url = f"https://newsapi.org/v2/everything?q={symbol}&apiKey={NEWS_API_KEY}"
 
     try:
         res = requests.get(url)
@@ -24,4 +29,4 @@ def get_stock_news(symbol):
         return []
 
 
-# pub_fab80513fb25441aa5cb41efd039ed05
+#

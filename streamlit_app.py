@@ -40,9 +40,15 @@ benchmark_page = st.Page(
     icon=":material/analytics:",
 )
 
+news_page = st.Page(
+    page="Pages/8_Live Market News.py",
+    title="Live Market News",
+    icon=":material/article:",
+)
+
 
 inputs = [input_page]
-outputs = [charts_page, risk_page, optimal_page, model_page, benchmark_page]
+outputs = [charts_page, risk_page, optimal_page, model_page, benchmark_page, news_page]
 chat_page = [talk_to_p]
 
 pg = st.navigation(
