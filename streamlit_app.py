@@ -34,9 +34,15 @@ model_page = st.Page(
     icon=":material/insights:",
 )
 
+benchmark_page = st.Page(
+    page="Pages/7_Model Benchmark.py",
+    title="Model Benchmark",
+    icon=":material/analytics:",
+)
+
 
 inputs = [input_page]
-outputs = [charts_page, risk_page, optimal_page, model_page]
+outputs = [charts_page, risk_page, optimal_page, model_page, benchmark_page]
 chat_page = [talk_to_p]
 
 pg = st.navigation(
