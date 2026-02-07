@@ -37,9 +37,21 @@ st.session_state["tickers"] = tickers
 # ---------- TICKER NORMALIZATION (INDIA FIX) ----------
 def normalize_ticker(t):
     indian = {
-        "RELIANCE", "TCS", "INFY", "HDFCBANK", "ICICIBANK", "SBIN",
-        "ITC", "LT", "AXISBANK", "KOTAKBANK", "BHARTIARTL",
-        "HINDUNILVR", "BAJFINANCE", "MARUTI", "TATAMOTORS"
+        "RELIANCE",
+        "TCS",
+        "INFY",
+        "HDFCBANK",
+        "ICICIBANK",
+        "SBIN",
+        "ITC",
+        "LT",
+        "AXISBANK",
+        "KOTAKBANK",
+        "BHARTIARTL",
+        "HINDUNILVR",
+        "BAJFINANCE",
+        "MARUTI",
+        "TATAMOTORS",
     }
     return f"{t}.NS" if t in indian else t
 
@@ -97,7 +109,9 @@ st.session_state["returns"] = returns
 c1, c2, c3 = st.columns([2, 2, 1])
 
 with c1:
-    frequency = st.selectbox("Frequency of return", ["Daily", "Weekly", "Monthly", "Yearly"])
+    frequency = st.selectbox(
+        "Frequency of return", ["Daily", "Weekly", "Monthly", "Yearly"]
+    )
 
 with c2:
     t = st.selectbox("Select ticker", tickers)
@@ -144,13 +158,17 @@ with col1:
         )
 
         if not ohlc.empty:
-            fig = go.Figure(data=[go.Candlestick(
-                x=ohlc.index,
-                open=ohlc["Open"],
-                high=ohlc["High"],
-                low=ohlc["Low"],
-                close=ohlc["Close"]
-            )])
+            fig = go.Figure(
+                data=[
+                    go.Candlestick(
+                        x=ohlc.index,
+                        open=ohlc["Open"],
+                        high=ohlc["High"],
+                        low=ohlc["Low"],
+                        close=ohlc["Close"],
+                    )
+                ]
+            )
             fig.update_layout(height=400)
             st.plotly_chart(fig)
         else:
@@ -194,5 +212,5 @@ save_risk_metrics(
     max_drawdown=max_drawdown,
     portfolio_returns=portfolio_returns,
     portfolio_sd=portfolio_sd,
-    tickers=tickers
+    tickers=tickers,
 )

@@ -7,8 +7,6 @@ import plotly.graph_objects as go
 from scipy.stats import norm
 from utils.savePortfolio import save_risk_metrics
 
-# norm = NormalDist()
-
 
 if st.session_state.disable:
     st.info("Please enter your input on the Home page and try again.")
