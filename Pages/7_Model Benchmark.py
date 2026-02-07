@@ -7,6 +7,10 @@ from statsmodels.tsa.arima.model import ARIMA
 from prophet import Prophet
 from sklearn.metrics import mean_squared_error
 import matplotlib.pyplot as plt
+import json
+import os
+from ai.sentiment_engine import analyze_sentiment
+from data.news_fetcher import get_stock_news
 
 st.title("Model Benchmark: LSTM vs ARIMA vs Prophet")
 
@@ -38,6 +42,23 @@ if symbol:
     df = df.dropna()
 
     close = df["Close"]
+    # =============================
+    # NEWS SENTIMENT (ADD HERE)
+    # =============================
+    news = get_stock_news(symbol)
+
+if news:
+    sentiment_score = analyze_sentiment(news)
+else:
+    sentiment_score = 0
+
+    st.subheader("Market Sentiment")
+    if sentiment_score > 0.2:
+        st.success(f"Market Sentiment: Positive ({round(sentiment_score,3)})")
+    elif sentiment_score < -0.2:
+        st.error(f"Market Sentiment: Negative ({round(sentiment_score,3)})")
+    else:
+        st.warning(f"Market Sentiment: Neutral ({round(sentiment_score,3)})")
 
     # split train-test
     train = close[:-30]
@@ -76,6 +97,31 @@ if symbol:
     st.write(f"ARIMA Prediction: {round(arima_pred,2)}")
     st.write(f"Prophet Prediction: {round(prophet_pred,2)}")
     st.write(f"Actual Price: {round(actual,2)}")
+
+# =============================
+# Save predictions for AI agent
+# =============================
+
+predictions_path = os.path.join("utils", "model_predictions.json")
+
+# load existing predictions
+if os.path.exists(predictions_path):
+    with open(predictions_path, "r") as f:
+        all_preds = json.load(f)
+else:
+    all_preds = {}
+
+# update for current symbol
+all_preds[symbol] = {
+    "lstm": float(lstm_pred),
+    "arima": float(arima_pred),
+    "prophet": float(prophet_pred),
+    "actual": float(actual),
+}
+
+# save back
+with open(predictions_path, "w") as f:
+    json.dump(all_preds, f, indent=4)
 
     st.subheader("RMSE Comparison")
 
