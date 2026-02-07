@@ -38,29 +38,37 @@ def predict_lstm(close_prices):
 symbol = st.text_input("Enter Stock Symbol", "AAPL")
 
 if symbol:
+
+    # -------- Fetch stock data --------
     df = yf.download(symbol, period="2y")
     df = df.dropna()
 
+    if df.empty:
+        st.warning("No stock data found.")
+        st.stop()
+
     close = df["Close"]
+
     # =============================
-    # NEWS SENTIMENT (ADD HERE)
+    # NEWS SENTIMENT
     # =============================
     news = get_stock_news(symbol)
 
-if news:
-    sentiment_score = analyze_sentiment(news)
-else:
-    sentiment_score = 0
+    if news:
+        sentiment_score = analyze_sentiment(news)
+    else:
+        sentiment_score = 0
 
     st.subheader("Market Sentiment")
-    if sentiment_score > 0.2:
-        st.success(f"Market Sentiment: Positive ({round(sentiment_score,3)})")
-    elif sentiment_score < -0.2:
-        st.error(f"Market Sentiment: Negative ({round(sentiment_score,3)})")
-    else:
-        st.warning(f"Market Sentiment: Neutral ({round(sentiment_score,3)})")
 
-    # split train-test
+    if sentiment_score > 0.2:
+        st.success(f"Positive ({round(sentiment_score,3)})")
+    elif sentiment_score < -0.2:
+        st.error(f"Negative ({round(sentiment_score,3)})")
+    else:
+        st.warning(f"Neutral ({round(sentiment_score,3)})")
+
+    # -------- split train-test --------
     train = close[:-30]
     test = close[-30:]
 
@@ -91,6 +99,7 @@ else:
     arima_rmse = np.sqrt(mean_squared_error([actual], [arima_pred]))
     prophet_rmse = np.sqrt(mean_squared_error([actual], [prophet_pred]))
 
+    # -------- Display predictions --------
     st.subheader("Prediction Comparison")
 
     st.write(f"LSTM Prediction: {round(lstm_pred,2)}")
@@ -98,31 +107,29 @@ else:
     st.write(f"Prophet Prediction: {round(prophet_pred,2)}")
     st.write(f"Actual Price: {round(actual,2)}")
 
-# =============================
-# Save predictions for AI agent
-# =============================
+    # =============================
+    # Save predictions for AI agent
+    # =============================
+    predictions_path = os.path.join("utils", "model_predictions.json")
 
-predictions_path = os.path.join("utils", "model_predictions.json")
+    if os.path.exists(predictions_path):
+        with open(predictions_path, "r") as f:
+            all_preds = json.load(f)
+    else:
+        all_preds = {}
 
-# load existing predictions
-if os.path.exists(predictions_path):
-    with open(predictions_path, "r") as f:
-        all_preds = json.load(f)
-else:
-    all_preds = {}
+    all_preds[symbol] = {
+        "lstm": float(lstm_pred),
+        "arima": float(arima_pred),
+        "prophet": float(prophet_pred),
+        "actual": float(actual),
+        "sentiment": float(sentiment_score),
+    }
 
-# update for current symbol
-all_preds[symbol] = {
-    "lstm": float(lstm_pred),
-    "arima": float(arima_pred),
-    "prophet": float(prophet_pred),
-    "actual": float(actual),
-}
+    with open(predictions_path, "w") as f:
+        json.dump(all_preds, f, indent=4)
 
-# save back
-with open(predictions_path, "w") as f:
-    json.dump(all_preds, f, indent=4)
-
+    # -------- RMSE --------
     st.subheader("RMSE Comparison")
 
     st.write(f"LSTM RMSE: {lstm_rmse}")
