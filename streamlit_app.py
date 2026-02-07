@@ -1,6 +1,9 @@
 import streamlit as st
 
 
+st.title("AI Portfolio Analyzer")
+st.write("Welcome to the portfolio analytics dashboard.")
+
 st.set_page_config(
     page_title="AI Protfolio Analyzer",
     layout="wide",

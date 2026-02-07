@@ -1,12 +1,12 @@
 {
-    "Sharpe Ratio": 0.5,
-    "Sortino Ratio": 0.63,
+    "Sharpe Ratio": 0.38,
+    "Sortino Ratio": 0.67,
     "Maximum Drawdown": {
-        "Percentage": "-48.89%",
-        "Delta": -306.56
+        "Percentage": "-73.63%",
+        "Delta": -257.71
     },
     "10-day Value at Risk (95%)": {
-        "Percentage": "9.62%",
-        "Delta": -60.0
+        "Percentage": "18.79%",
+        "Delta": -66.0
     }
 }

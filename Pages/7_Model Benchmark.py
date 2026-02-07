@@ -11,7 +11,7 @@ import json
 import os
 from ai.sentiment_engine import analyze_sentiment
 from data.news_fetcher import get_stock_news
-from state import init_session_state
+from TTF.state import init_session_state
 
 
 # -------- Load LSTM --------
