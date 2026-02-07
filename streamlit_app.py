@@ -13,20 +13,32 @@ st.set_page_config(
 input_page = st.Page(
     page="Pages/1_Set Profile.py",
     title="Input",
+    icon=":material/account_balance:",
     default=True,
 )
 
-charts_page = st.Page(page="Pages/2_Stock Charts.py", title="Stock Charts")
 
-risk_page = st.Page(page="Pages/3_Risk Analysis.py", title="Risk Analysis")
+charts_page = st.Page(
+    page="Pages/2_Stock Charts.py",
+    title="Stock Charts",
+    icon=":material/candlestick_chart:",
+)
 
-optimal_page = st.Page(page="Pages/4_Optimal Portfolio.py", title="Optimal Portfolio")
+risk_page = st.Page(
+    page="Pages/3_Risk Analysis.py", title="Risk Analysis", icon=":material/shield:"
+)
+
+optimal_page = st.Page(
+    page="Pages/4_Optimal Portfolio.py",
+    title="Optimal Portfolio",
+    icon=":material/account_balance:",
+)
+
 
 talk_to_p = st.Page(
-    page="Pages/5_Talk To Portfolio.py",
-    title="Chat with Portfolio",
-    icon=":material/thumb_up:",
+    page="Pages/5_Talk To Portfolio.py", title="AI Copilot", icon=":material/smart_toy:"
 )
+
 
 model_page = st.Page(
     page="Pages/6_Model Prediction.py",

@@ -120,7 +120,10 @@ def generated_response(prompt):
 
 def main():
 
-    st.title(":rainbow[AI Portfolio Copilot]")
+    st.markdown(
+        "<h1 style='background: linear-gradient(90deg,#0ea5e9,#6366f1); -webkit-background-clip: text; color: transparent;'>AI Portfolio Copilot</h1>",
+        unsafe_allow_html=True,
+    )
 
     st.caption("Ask about risk, exit strategy, predictions, or portfolio optimization.")
 
