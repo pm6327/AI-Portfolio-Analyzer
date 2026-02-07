@@ -28,13 +28,19 @@ talk_to_p = st.Page(
     icon=":material/thumb_up:",
 )
 
+model_page = st.Page(
+    page="Pages/6_Model Prediction.py",
+    title="Model Prediction",
+    icon=":material/insights:",
+)
+
 
 inputs = [input_page]
-outputs = [charts_page, risk_page, optimal_page]
+outputs = [charts_page, risk_page, optimal_page, model_page]
 chat_page = [talk_to_p]
 
 pg = st.navigation(
-    {"User Input": inputs, "Analyses": outputs, "Chat with your Portfolio": chat_page}
+    {"User Input": inputs, "Analysis": outputs, "Chat with your Portfolio": chat_page}
 )
 
 st.sidebar.link_button("See Code Here:", "https://streamlit.io/gallery")
