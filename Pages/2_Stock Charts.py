@@ -7,6 +7,36 @@ import plotly.graph_objects as go
 from utils.savePortfolio import save_risk_metrics
 
 
+# ---------- PAGE CONFIG ----------
+st.set_page_config(layout="wide")
+
+st.markdown(
+    """
+<style>
+.metric-card {
+    background-color: #111827;
+    padding: 18px;
+    border-radius: 12px;
+    border: 1px solid #1f2937;
+}
+.news-card {
+    background-color: #0f172a;
+    padding: 14px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #1e293b;
+}
+.section-title {
+    font-size: 22px;
+    font-weight: 600;
+    margin-top: 10px;
+}
+</style>
+""",
+    unsafe_allow_html=True,
+)
+
+
 # ---------- ACCESS GUARD ----------
 if st.session_state.disable:
     st.info("Please enter your input on the Home page and try again.")
@@ -25,7 +55,6 @@ for ticker, value in zip(tickers, values):
     weights_dict[ticker] = value / total_value
 
 portfolio["Weight"] = portfolio["Ticker"].map(weights_dict)
-
 weights = np.array(list(weights_dict.values()))
 
 st.session_state["weights"] = weights
@@ -34,7 +63,7 @@ st.session_state["values"] = values
 st.session_state["tickers"] = tickers
 
 
-# ---------- TICKER NORMALIZATION (INDIA FIX) ----------
+# ---------- TICKER NORMALIZATION ----------
 def normalize_ticker(t):
     indian = {
         "RELIANCE",
@@ -99,28 +128,36 @@ rolling_max = cumulative.expanding().max()
 drawdowns = cumulative / rolling_max - 1
 max_drawdown = drawdowns.min().min()
 
-
-# ---------- STORE SESSION ----------
 st.session_state["stocks"] = stocks
 st.session_state["returns"] = returns
 
 
-# ---------- UI CONTROLS ----------
-c1, c2, c3 = st.columns([2, 2, 1])
+# ---------- HERO DASHBOARD ----------
+st.markdown("## 📊 Portfolio Overview")
 
-with c1:
+hero1, hero2, hero3, hero4 = st.columns(4)
+
+hero1.metric("Portfolio Return", f"{round(portfolio_returns*100,2)}%")
+hero2.metric("Portfolio Risk (SD)", f"{round(portfolio_sd*100,2)}%")
+hero3.metric("Max Drawdown", f"{round(max_drawdown*100,2)}%")
+hero4.metric("Assets Tracked", len(tickers))
+
+
+# ---------- CONTROL BAR ----------
+st.markdown("### ⚙️ Controls")
+
+ctrl1, ctrl2, ctrl3 = st.columns([2, 2, 1])
+
+with ctrl1:
     frequency = st.selectbox(
-        "Frequency of return", ["Daily", "Weekly", "Monthly", "Yearly"]
+        "Return Frequency", ["Daily", "Weekly", "Monthly", "Yearly"]
     )
 
-with c2:
-    t = st.selectbox("Select ticker", tickers)
+with ctrl2:
+    t = st.selectbox("Select Stock", tickers)
 
-with c3:
-    st.page_link("Pages/3_Risk Analysis.py", label="Go to Risk Analysis →")
-
-
-st.title(f"{t} Summary")
+with ctrl3:
+    st.page_link("Pages/3_Risk Analysis.py", label="Open Risk Lab →")
 
 
 # ---------- FREQUENCY RETURNS ----------
@@ -142,14 +179,19 @@ risk = annual_volatility.to_frame(name="Volatility")
 st.session_state["risk"] = risk
 
 
-# ---------- CHARTS ----------
-col1, col2 = st.columns([3, 2])
+# ---------- MAIN DASHBOARD AREA ----------
+left, right = st.columns([3, 1.4])
 
-with col1:
-    tab1, tab2 = st.tabs(["Historical Stock Price", "Live Price"])
+with left:
+    st.markdown("### 📈 Price Movement")
+
+    tab1, tab2 = st.tabs(["Historical", "Live Market"])
 
     with tab1:
-        st.line_chart(stocks[t], height=350)
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=stocks.index, y=stocks[t], mode="lines", name=t))
+        fig.update_layout(height=420)
+        st.plotly_chart(fig, use_container_width=True)
 
     with tab2:
         yday = stocks.index[-2]
@@ -169,39 +211,51 @@ with col1:
                     )
                 ]
             )
-            fig.update_layout(height=400)
-            st.plotly_chart(fig)
+            fig.update_layout(height=420)
+            st.plotly_chart(fig, use_container_width=True)
         else:
             st.info("Live data not available.")
 
 
-# ---------- NEWS & METRICS ----------
-with col2:
-    st.subheader(f"{t} News")
-    news = yf.Ticker(normalize_ticker(t)).news or []
-
-    shown = 0
-    for article in news:
-        if article.get("title") and article.get("link"):
-            st.markdown(f"[{article['title']}]({article['link']})")
-            shown += 1
-        if shown == 3:
-            break
+# ---------- RIGHT PANEL ----------
+with right:
+    st.markdown("### 📊 Stock Insights")
 
     pct = f[t].iloc[-1] * 100 if not f.empty else 0
 
-    st.metric("Current Stock Price", round(stocks[t].iloc[-1], 2), f"{pct:.2f}%")
-    st.metric("Portfolio Weight", round(weights_dict[t], 2))
-    st.metric("Annualised Volatility", f"{annual_volatility[t]}%")
-    st.metric("Maximum Drawdown", f"{round(drawdowns[t].min() * 100, 2)}%")
+    st.metric("Current Price", round(stocks[t].iloc[-1], 2), f"{pct:.2f}%")
+    st.metric("Portfolio Weight", f"{round(weights_dict[t]*100,2)}%")
+    st.metric("Volatility", f"{annual_volatility[t]}%")
+    st.metric("Drawdown", f"{round(drawdowns[t].min()*100,2)}%")
+
+    st.markdown("### 📰 Latest News")
+
+    news = yf.Ticker(normalize_ticker(t)).news or []
+
+    for article in news[:3]:
+        if article.get("title") and article.get("link"):
+            st.markdown(
+                f"""
+                <div class="news-card">
+                <a href="{article['link']}" target="_blank">
+                {article['title']}
+                </a>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
 
-# ---------- RETURNS CHART ----------
-st.write(f"{frequency} returns (Last 5 years)")
-st.line_chart(f[t], height=140)
+# ---------- RETURNS TREND ----------
+st.markdown("### 📉 Returns Trend")
+
+fig = go.Figure()
+fig.add_trace(go.Scatter(x=f.index, y=f[t], mode="lines", name="Returns"))
+fig.update_layout(height=250)
+st.plotly_chart(fig, use_container_width=True)
 
 
-# ---------- SAVE (LOCAL ONLY, COLLEGE MODE) ----------
+# ---------- SAVE METRICS ----------
 save_risk_metrics(
     portfolio=portfolio,
     stocks=stocks,

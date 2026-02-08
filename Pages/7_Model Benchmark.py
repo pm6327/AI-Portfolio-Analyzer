@@ -6,15 +6,50 @@ from tensorflow.keras.models import load_model
 from statsmodels.tsa.arima.model import ARIMA
 from prophet import Prophet
 from sklearn.metrics import mean_squared_error
-import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 import json
 import os
 from ai.sentiment_engine import analyze_sentiment
 from data.news_fetcher import get_stock_news
-from TTF.state import init_session_state
 
 
-# -------- Load LSTM --------
+# ---------- PAGE CONFIG ----------
+st.set_page_config(layout="wide")
+
+st.markdown(
+    """
+<style>
+.header-card {
+    padding: 20px;
+    border-radius: 14px;
+    background: linear-gradient(135deg,#020617,#0f172a);
+    border: 1px solid #1e293b;
+}
+.metric-box {
+    background:#020617;
+    padding:12px;
+    border-radius:10px;
+    border:1px solid #1e293b;
+}
+</style>
+""",
+    unsafe_allow_html=True,
+)
+
+
+# ---------- HEADER ----------
+st.markdown(
+    """
+<div class="header-card">
+<h2>🤖 AI Multi-Model Stock Prediction</h2>
+<p>LSTM + ARIMA + Prophet + News Sentiment Engine</p>
+</div>
+""",
+    unsafe_allow_html=True,
+)
+
+
+# ---------- LOAD LSTM ----------
 @st.cache_resource
 def load_lstm():
     return load_model("models/lstm_model.h5", compile=False)
@@ -23,42 +58,89 @@ def load_lstm():
 lstm_model = load_lstm()
 
 
+# ---------- SAFE CLOSE EXTRACTION ----------
+def extract_close(df):
+
+    if isinstance(df.columns, pd.MultiIndex):
+
+        level_vals = df.columns.get_level_values(-1)
+
+        if "Close" in level_vals:
+            return df.xs("Close", level=-1, axis=1)
+
+        elif "Adj Close" in level_vals:
+            return df.xs("Adj Close", level=-1, axis=1)
+
+        else:
+            return df.select_dtypes(include=[np.number]).iloc[:, 0]
+
+    else:
+        if "Close" in df.columns:
+            return df["Close"]
+
+        elif "Adj Close" in df.columns:
+            return df["Adj Close"]
+
+        else:
+            return df.select_dtypes(include=[np.number]).iloc[:, 0]
+
+
+# ---------- LSTM ----------
 def predict_lstm(close_prices):
-    mn = close_prices.min()
-    mx = close_prices.max()
-    scaled = (close_prices - mn) / (mx - mn)
-    seq = scaled[-5:]
-    seq = np.array(seq).reshape(1, 5, 1)
+    close_prices = np.array(close_prices).astype(float).flatten()
+
+    mn, mx = np.min(close_prices), np.max(close_prices)
+
+    if mx - mn == 0:
+        return float(close_prices[-1])
+
+    scaled = (close_prices - mn) / (mx - mn + 1e-9)
+
+    if len(scaled) < 5:
+        return float(close_prices[-1])
+
+    seq = scaled[-5:].reshape(1, 5, 1)
     pred_scaled = lstm_model.predict(seq, verbose=0)[0][0]
-    return pred_scaled * (mx - mn) + mn
+    return float(pred_scaled * (mx - mn) + mn)
 
 
-# -------- UI --------
-symbol = st.text_input("Enter Stock Symbol", "AAPL")
+# ---------- INPUT ----------
+st.markdown("### 📥 Enter Stock Symbol")
 
-if symbol:
+col1, col2 = st.columns([3, 1])
 
-    # -------- Fetch stock data --------
-    df = yf.download(symbol, period="2y")
-    df = df.dropna()
+with col1:
+    symbol = st.text_input("Stock ticker", "AAPL")
 
-    if df.empty:
-        st.warning("No stock data found.")
+with col2:
+    run = st.button("Run AI Prediction")
+
+
+# ---------- MAIN EXECUTION ----------
+if symbol and run:
+
+    # -------- FETCH DATA --------
+    with st.spinner("Fetching market data..."):
+        df = yf.download(symbol, period="2y", progress=False)
+
+    if df is None or df.empty:
+        st.error("No market data found.")
         st.stop()
 
-    close = df["Close"]
+    close = extract_close(df)
+    close = close.astype(float).dropna()
+
+    if len(close) < 60:
+        st.warning("Not enough historical data.")
+        st.stop()
 
     # =============================
-    # NEWS SENTIMENT
+    # SENTIMENT
     # =============================
     news = get_stock_news(symbol)
+    sentiment_score = analyze_sentiment(news) if news else 0
 
-    if news:
-        sentiment_score = analyze_sentiment(news)
-    else:
-        sentiment_score = 0
-
-    st.subheader("Market Sentiment")
+    st.markdown("### 📰 Market Sentiment")
 
     if sentiment_score > 0.2:
         st.success(f"Positive ({round(sentiment_score,3)})")
@@ -67,47 +149,62 @@ if symbol:
     else:
         st.warning(f"Neutral ({round(sentiment_score,3)})")
 
-    # -------- split train-test --------
+    # =============================
+    # TRAIN / TEST
+    # =============================
     train = close[:-30]
     test = close[-30:]
+    actual = float(test.iloc[0])
 
-    # -------- LSTM prediction --------
+    # ---------- LSTM ----------
     lstm_pred = predict_lstm(train.values)
 
-    # -------- ARIMA --------
-    arima_model = ARIMA(train, order=(5, 1, 0))
-    arima_fit = arima_model.fit()
-    arima_pred = arima_fit.forecast(steps=1).iloc[0]
+    # ---------- ARIMA ----------
+    try:
+        arima = ARIMA(train, order=(5, 1, 0)).fit()
+        arima_pred = float(arima.forecast(steps=1).iloc[0])
+    except:
+        arima_pred = float(train.iloc[-1])
 
-    # -------- Prophet --------
-    prophet_df = train.reset_index()
-    prophet_df.columns = ["ds", "y"]
+    # ---------- PROPHET ----------
+    try:
+        prophet_df = train.reset_index()
+        prophet_df.columns = ["ds", "y"]
+        prophet = Prophet(daily_seasonality=True)
+        prophet.fit(prophet_df)
+        future = prophet.make_future_dataframe(periods=1)
+        forecast = prophet.predict(future)
+        prophet_pred = float(forecast["yhat"].iloc[-1])
+    except:
+        prophet_pred = float(train.iloc[-1])
 
-    prophet_model = Prophet()
-    prophet_model.fit(prophet_df)
+    # =============================
+    # METRICS
+    # =============================
+    st.markdown("### 📊 Prediction Comparison")
 
-    future = prophet_model.make_future_dataframe(periods=1)
-    forecast = prophet_model.predict(future)
-    prophet_pred = forecast["yhat"].iloc[-1]
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("LSTM", round(lstm_pred, 2))
+    m2.metric("ARIMA", round(arima_pred, 2))
+    m3.metric("Prophet", round(prophet_pred, 2))
+    m4.metric("Actual", round(actual, 2))
 
-    # -------- Actual last value --------
-    actual = test.iloc[0]
-
-    # -------- Metrics --------
+    # =============================
+    # RMSE
+    # =============================
     lstm_rmse = np.sqrt(mean_squared_error([actual], [lstm_pred]))
     arima_rmse = np.sqrt(mean_squared_error([actual], [arima_pred]))
     prophet_rmse = np.sqrt(mean_squared_error([actual], [prophet_pred]))
 
-    # -------- Display predictions --------
-    st.subheader("Prediction Comparison")
+    st.markdown("### 📉 Model Accuracy")
 
-    st.write(f"LSTM Prediction: {round(lstm_pred,2)}")
-    st.write(f"ARIMA Prediction: {round(arima_pred,2)}")
-    st.write(f"Prophet Prediction: {round(prophet_pred,2)}")
-    st.write(f"Actual Price: {round(actual,2)}")
+    r1, r2, r3 = st.columns(3)
+    r1.metric("LSTM RMSE", round(lstm_rmse, 4))
+    r2.metric("ARIMA RMSE", round(arima_rmse, 4))
+    r3.metric("Prophet RMSE", round(prophet_rmse, 4))
 
     # =============================
-    # Save predictions for AI agent
+    # SAVE FOR AI AGENT
     # =============================
     predictions_path = os.path.join("utils", "model_predictions.json")
 
@@ -128,20 +225,55 @@ if symbol:
     with open(predictions_path, "w") as f:
         json.dump(all_preds, f, indent=4)
 
-    # -------- RMSE --------
-    st.subheader("RMSE Comparison")
+    # =============================
+    # INTERACTIVE TREND CHART
+    # =============================
+    st.markdown("### 📈 Historical Trend + Model Predictions")
 
-    st.write(f"LSTM RMSE: {lstm_rmse}")
-    st.write(f"ARIMA RMSE: {arima_rmse}")
-    st.write(f"Prophet RMSE: {prophet_rmse}")
+    fig = go.Figure()
 
-    # -------- Plot --------
-    fig, ax = plt.subplots()
-    ax.plot(close.values, label="Historical")
+    fig.add_trace(
+        go.Scatter(
+            x=close.index, y=close, mode="lines", line=dict(width=3), name="Historical"
+        )
+    )
 
-    ax.scatter(len(close) - 1, lstm_pred, label="LSTM")
-    ax.scatter(len(close) - 1, arima_pred, label="ARIMA")
-    ax.scatter(len(close) - 1, prophet_pred, label="Prophet")
+    fig.add_trace(
+        go.Scatter(
+            x=[close.index[-1]],
+            y=[lstm_pred],
+            mode="markers",
+            marker=dict(size=12),
+            name="LSTM",
+        )
+    )
 
-    ax.legend()
-    st.pyplot(fig)
+    fig.add_trace(
+        go.Scatter(
+            x=[close.index[-1]],
+            y=[arima_pred],
+            mode="markers",
+            marker=dict(size=12),
+            name="ARIMA",
+        )
+    )
+
+    fig.add_trace(
+        go.Scatter(
+            x=[close.index[-1]],
+            y=[prophet_pred],
+            mode="markers",
+            marker=dict(size=12),
+            name="Prophet",
+        )
+    )
+
+    fig.update_layout(
+        template="plotly_dark",
+        height=520,
+        xaxis_title="Date",
+        yaxis_title="Price",
+        hovermode="x unified",
+    )
+
+    st.plotly_chart(fig, use_container_width=True)

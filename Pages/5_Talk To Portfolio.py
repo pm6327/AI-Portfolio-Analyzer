@@ -4,20 +4,42 @@ import os
 import json
 
 
+# ---------- PAGE CONFIG ----------
+st.set_page_config(layout="wide")
+
+st.markdown(
+    """
+<style>
+.header-card {
+    padding: 18px;
+    border-radius: 14px;
+    background: linear-gradient(135deg,#020617,#020617);
+    border: 1px solid #1e293b;
+}
+.chat-hint {
+    padding: 12px;
+    border-radius: 10px;
+    background-color: #020617;
+    border: 1px solid #1e293b;
+    margin-bottom: 12px;
+}
+</style>
+""",
+    unsafe_allow_html=True,
+)
+
+
 # =============================
 # Paths
 # =============================
-
 risk_metrics_path = os.path.join("utils", "risk_metrics.json")
 portfolio_metrics_path = os.path.join("utils", "portfolio_metrics.json")
-prediction_path = os.path.join("utils", "model_predictions.json")  # create later
+prediction_path = os.path.join("utils", "model_predictions.json")
 
 
 # =============================
 # Context Builder
 # =============================
-
-
 def load_json(path):
     if os.path.exists(path):
         with open(path, "r") as f:
@@ -26,7 +48,6 @@ def load_json(path):
 
 
 def get_user_context():
-
     risk_metrics = load_json(risk_metrics_path)
     portfolio_metrics = load_json(portfolio_metrics_path)
     predictions = load_json(prediction_path)
@@ -36,15 +57,12 @@ def get_user_context():
         "portfolio_metrics": portfolio_metrics,
         "model_predictions": predictions,
     }
-
     return context
 
 
 # =============================
-# Intent Detection (Agent Brain)
+# Intent Detection
 # =============================
-
-
 def detect_intent(query):
 
     query = query.lower()
@@ -67,8 +85,6 @@ def detect_intent(query):
 # =============================
 # Agent Reasoning Layer
 # =============================
-
-
 def generate_agent_prompt(user_query, context):
 
     intent = detect_intent(user_query)
@@ -83,73 +99,99 @@ def generate_agent_prompt(user_query, context):
     }
 
     system_prompt = f"""
-    You are an AI Portfolio Copilot.
+You are an AI Portfolio Copilot.
 
-    Portfolio Data:
-    {context["portfolio_metrics"]}
+Portfolio Data:
+{context["portfolio_metrics"]}
 
-    Risk Data:
-    {context["risk_metrics"]}
+Risk Data:
+{context["risk_metrics"]}
 
-    Model Predictions:
-    {context["model_predictions"]}
+Model Predictions:
+{context["model_predictions"]}
 
-    Task:
-    {reasoning_rules[intent]}
+Task:
+{reasoning_rules[intent]}
 
-    Respond like a financial analyst.
-    Give insights, not generic text.
-    """
+Respond like a financial analyst.
+Give insights, not generic text.
+"""
 
     return system_prompt
 
 
 def generated_response(prompt):
-
     context = get_user_context()
     system_prompt = generate_agent_prompt(prompt, context)
-
     response = stream_chat_response(user_query=prompt, context=[system_prompt])
-
     return response
 
 
 # =============================
-# Streamlit UI
+# UI LAYOUT
 # =============================
 
+# ----- HEADER
+st.markdown(
+    """
+<div class="header-card">
+<h2>🤖 AI Portfolio Copilot</h2>
+<p>Your intelligent assistant for risk insights, exits, rebalancing and future forecasts.</p>
+</div>
+""",
+    unsafe_allow_html=True,
+)
 
-def main():
+# ----- SUGGESTED PROMPTS
+st.markdown("### 💬 Ask things like")
 
-    st.markdown(
-        "<h1 style='background: linear-gradient(90deg,#0ea5e9,#6366f1); -webkit-background-clip: text; color: transparent;'>AI Portfolio Copilot</h1>",
-        unsafe_allow_html=True,
-    )
+hint1, hint2, hint3, hint4 = st.columns(4)
 
-    st.caption("Ask about risk, exit strategy, predictions, or portfolio optimization.")
+hint1.markdown(
+    '<div class="chat-hint">Should I rebalance my portfolio?</div>',
+    unsafe_allow_html=True,
+)
+hint2.markdown(
+    '<div class="chat-hint">Which stock is riskiest right now?</div>',
+    unsafe_allow_html=True,
+)
+hint3.markdown(
+    '<div class="chat-hint">Any stock I should sell?</div>', unsafe_allow_html=True
+)
+hint4.markdown(
+    '<div class="chat-hint">Future outlook for my portfolio</div>',
+    unsafe_allow_html=True,
+)
 
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
 
-    chat_container = st.container()
+# =============================
+# CHAT SYSTEM
+# =============================
 
-    for message in st.session_state.messages:
-        with chat_container:
-            with st.chat_message(message["role"]):
-                st.markdown(message["content"])
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-    if prompt := st.chat_input("Ask about your portfolio…"):
+chat_container = st.container()
 
-        st.session_state.messages.append({"role": "user", "content": prompt})
+for message in st.session_state.messages:
+    with chat_container:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
 
-        with st.chat_message("user"):
-            st.markdown(prompt)
 
-        with st.chat_message("assistant"):
+# ----- USER INPUT
+if prompt := st.chat_input("Ask about your portfolio…"):
+
+    st.session_state.messages.append({"role": "user", "content": prompt})
+
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    with st.chat_message("assistant"):
+
+        with st.spinner("Analyzing portfolio and generating insights..."):
             response = generated_response(prompt)
-            st.write(response)
 
-        st.session_state.messages.append({"role": "assistant", "content": response})
+        st.write(response)
 
-
-main()
+    st.session_state.messages.append({"role": "assistant", "content": response})
