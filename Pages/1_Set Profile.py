@@ -179,5 +179,5 @@ if not st.session_state.disable:
 
     s1, s2 = st.columns(2)
 
-    s1.metric("Total Investment", f"₹ {round(total_value,2)}")
+    s1.metric("Total Investment", f"$ {round(total_value,2)}")
     s2.metric("Assets Added", total_assets)

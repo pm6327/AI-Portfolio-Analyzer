@@ -43,9 +43,8 @@ st.markdown(
 )
 
 
-# =============================
 # CONFIG
-# =============================
+
 NEWS_API_KEY = os.getenv("NEWS_API_KEY")
 
 if not NEWS_API_KEY:
@@ -72,9 +71,9 @@ with col3:
     refresh_rate = st.slider("Seconds", 30, 300, 60)
 
 
-# =============================
 # STOCK NEWS FETCHER
-# =============================
+
+
 @st.cache_data(ttl=60)
 def fetch_stock_news(query):
 
@@ -107,9 +106,8 @@ def fetch_stock_news(query):
         return []
 
 
-# =============================
 # UI DISPLAY
-# =============================
+
 if symbol:
 
     with st.spinner("Fetching financial news..."):
@@ -148,9 +146,8 @@ if symbol:
                 st.markdown("</div>", unsafe_allow_html=True)
 
 
-# =============================
 # AUTO REFRESH
-# =============================
+
 if symbol and auto_refresh:
     time.sleep(refresh_rate)
     st.rerun()

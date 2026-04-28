@@ -111,7 +111,7 @@ st.markdown("### 📊 Portfolio Risk Snapshot")
 
 m1, m2, m3, m4 = st.columns(4)
 
-m1.metric("Total Value", f"₹ {round(sum(values),2)}")
+m1.metric("Total Value", f"$ {round(sum(values),2)}")
 m2.metric("Annual Return", f"{round(portfolio_returns*100,2)}%")
 m3.metric("Volatility", f"{round(portfolio_sd*100,2)}%")
 m4.metric("Sharpe Ratio", round(sharpe, 2))
